@@ -1,0 +1,44 @@
+/* Main App Layout */
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .nav {
+    display: flex;
+    gap: 15px;
+}
+
+header .nav-link {
+    color: white;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px 10px;
+}
+
+header .nav-link.active {
+    border-bottom: 2px solid white;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+.fixed-bottom {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+}
