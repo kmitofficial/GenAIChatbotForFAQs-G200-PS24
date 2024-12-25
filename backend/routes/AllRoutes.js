@@ -1,74 +1,115 @@
 const express = require('express');
-const axios = require("axios");
-const { QueryModel,FeedbackModel} = require('../models/allschema.js');
-const allroutes = express();
+const axios = require('axios');
+const { QueryModel, FeedbackModel } = require('../models/allschema.js');
+const sanitize = require('mongo-sanitize');
+const { body, validationResult } = require('express-validator');
+
+const allroutes = express.Router();
 const bodyParser = require('body-parser');
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
+
 dotenv.config();
 allroutes.use(bodyParser.json());
 
-allroutes.post('/feedback', (req, res) => {
-    const { feedback } = req.body;
+// Utility Function: Cosine Similarity
+function calculateCosineSimilarity(vectorA, vectorB) {
+    const dotProduct = vectorA.reduce((sum, a, idx) => sum + a * vectorB[idx], 0);
+    const magnitudeA = Math.sqrt(vectorA.reduce((sum, a) => sum + a * a, 0));
+    const magnitudeB = Math.sqrt(vectorB.reduce((sum, b) => sum + b * b, 0));
+    if (magnitudeA === 0 || magnitudeB === 0) return 0;
+    return dotProduct / (magnitudeA * magnitudeB);
+}
 
-    if (!feedback) {
-        console.log("All the fields are required");
-        res.status(404).json({ error: "All the fields are required" });
+// Feedback Route
+allroutes.post(
+    '/feedback',
+    body('feedback').trim().notEmpty().withMessage('Feedback cannot be empty'),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { feedback } = req.body;
+        try {
+            const sanitizedFeedback = sanitize(feedback);
+            const newFeedback = new FeedbackModel({ feedback: sanitizedFeedback });
+            await newFeedback.save();
+            res.status(201).json({ message: "Feedback Saved Successfully" });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
     }
+);
 
-    try {
-        const newFeedback = new FeedbackModel({ feedback });
-        newFeedback.save();
-        console.log("Feedback Saved Successful");
-        res.status(201).json({ message: "Feedback Saved Successful" });
+// Query Processing Route
+allroutes.post(
+    '/query',
+    body('query').trim().notEmpty().withMessage('Query cannot be empty'),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { query } = req.body;
+        const sanitizedQuery = sanitize(query);
+
+        try {
+            // Step 1: Send Query to NLP Service
+            console.log("reached nlp")
+            const nlpResponse = await axios.post('http://127.0.0.1:4000/embed', { query: sanitizedQuery });
+            console.log("done with embeddings")
+            const userEmbedding = nlpResponse.data.embedding;
+            console.log("NLP Response:", nlpResponse.data);
+
+
+            if (!Array.isArray(userEmbedding) || userEmbedding.length === 0) {
+                return res.status(500).json({ message: "Failed to generate embedding." });
+            }
+
+            // Step 2: Retrieve Stored Queries & Compare Using Cosine Similarity
+            const allQueries = await QueryModel.find();
+            let bestMatch = null;
+            let bestScore = 0;
+
+            allQueries.forEach((entry) => {
+                if (!entry.embeddings || !Array.isArray(entry.embeddings)) {
+                    // console.error("Invalid embeddings in database entry:", entry);
+                    return;
+                }
+                const similarity = calculateCosineSimilarity(userEmbedding, entry.embeddings);
+                if (similarity > bestScore) {
+                    bestScore = similarity;
+                    bestMatch = entry;
+                }
+            });
+
+            if (bestMatch && bestScore > 0.8) {
+                return res.json({ response: bestMatch.response });
+            }
+
+            // Step 3: Forward to RAG Pipeline
+            console.log("reached rag")
+            const ragResponse = await axios.post(process.env.COLLAB_BACKEND_URL, { query: sanitizedQuery });
+            console.log("done with rag")
+            const ragAnswer = ragResponse.data.message;
+
+            // Step 4: Save New Query & Response
+            const newQuery = new QueryModel({
+                query: sanitizedQuery,
+                response: ragAnswer,
+                embeddings: userEmbedding
+            });
+            await newQuery.save();
+
+            res.json({ response: ragAnswer });
+        } catch (error) {
+            console.error("Error processing query:", error.message);
+            res.status(500).json({ message: "An error occurred while processing the request." });
+        }
     }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-
-// collab url
-const COLLAB_URL = process.env.COLLAB_BACKEND_URL;
-
-// Endpoint for the chatbot
-allroutes.post('/rag', async (req, res) => {
-    const userQuery = req.body.query;
-    const embedding = req.body.embeddings;
-    console.log("EMBEDDINGS", embedding);
-    try {
-        // Forward query to Google Colab
-        console.log("reachead-1");
-        const colabResponse = await axios.post(`${COLLAB_URL}`, {
-            query: userQuery,
-        });
-        console.log("reachead-2");
-
-
-        // Send Colab response back to the frontend
-        console.log("Response: ", colabResponse.data.message);
-        // store in mongodb
-        console.log("reached mongo path");
-        const collabAnswer = colabResponse.data.message;
-        const newQuery = QueryModel({
-            query: userQuery,
-            response: collabAnswer,
-            embeddings: embedding
-        });
-        console.log("reached mongo path-2");
-
-        await newQuery.save();
-        console.log("Successfully saved in MongoDB");
-
-
-        // queryroute(userQuery, colabResponse.data.message, 'embeddings'); 
-        res.status(202).json({ response: colabResponse.data.message });
-
-    } catch (error) {
-        console.error("Error communicating with Colab or saving to mongoDB:", error.message);
-        res.status(500).json({ error: "Failed to connect to RAG pipeline." });
-    }
-});
-
+);
 
 module.exports = allroutes;
