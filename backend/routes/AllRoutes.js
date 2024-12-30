@@ -86,7 +86,7 @@ allroutes.post(
                 }
             });
 
-            if (bestMatch && bestScore > 0.8) {
+            if (bestMatch && bestScore > 0.9) {
                 return res.json({ response: bestMatch.response });
             }
 
