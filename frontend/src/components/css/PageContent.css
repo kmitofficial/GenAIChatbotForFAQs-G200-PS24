@@ -2,6 +2,7 @@
 .page-content-wrapper {
     position: relative;
     width: 100%;
+<<<<<<< HEAD
     height: 100vh;
     background-color: #f8f9fa;
     /* Using a light gray solid color */
@@ -10,6 +11,15 @@
     align-items: flex-start;
     padding: 20px;
     overflow-y: scroll;
+=======
+    height: 100vh; 
+    background-color: #f8f9fa; /* Using a light gray solid color */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
+    padding: 20px;
+    overflow-y: scroll; 
+>>>>>>> e0689a6bfe86d462829621ad5fe8720f21ce79aa
     font-family: 'Arial', sans-serif;
     scrollbar-width: thin;
     scrollbar-color: #3498db transparent;
@@ -72,9 +82,15 @@
 }
 
 .dashboard-cards .card img {
+<<<<<<< HEAD
     width: 150px;
     height: 150px;
     object-fit: cover;
+=======
+    width: 150px; 
+    height: 150px;
+    object-fit: cover; 
+>>>>>>> e0689a6bfe86d462829621ad5fe8720f21ce79aa
     margin-bottom: 10px;
 }
 
@@ -166,4 +182,8 @@
     .dashboard-cards {
         grid-template-columns: 1fr;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e0689a6bfe86d462829621ad5fe8720f21ce79aa
