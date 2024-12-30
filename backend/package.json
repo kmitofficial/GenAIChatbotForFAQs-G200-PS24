@@ -14,6 +14,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.6",
     "express": "^4.21.1",
+    "express-validator": "^7.2.0",
+    "mongo-sanitize": "^1.1.0",
     "mongoose": "^8.8.3",
     "ngrok": "^5.0.0-beta.2",
     "node-modules": "^1.0.1",

@@ -3,7 +3,7 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: #007bff;
+    background-color: #0056b3;
     color: white;
     font-size: 18px;
     padding: 15px;
@@ -13,10 +13,12 @@
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
     z-index: 1100;
     /* Ensure it stays on top */
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .chat-button:hover {
     background-color: #0056b3;
+    transform: scale(1.1);
 }
 
 /* Chat window */
@@ -32,6 +34,12 @@
     overflow: hidden;
     border: 1px solid #ddd;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex-direction: row;
+    transition: transform 0.3s ease;
+}
+
+.chat-window.closed {
+    transform: translateX(100%);
 }
 
 /* Sidebar styling */
@@ -43,7 +51,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    /* Align content at top and bottom */
 }
 
 .sidebar-title {
@@ -54,22 +61,23 @@
 
 .sidebar-links {
     flex-grow: 1;
-    /* Push feedback button to the bottom */
 }
 
 .sidebar-item {
     margin: 10px 0;
     cursor: pointer;
     color: #007bff;
+    transition: color 0.3s ease;
 }
 
 .sidebar-item:hover {
     text-decoration: underline;
+    color: #0056b3;
 }
 
 /* Feedback button in sidebar */
 .feedback-button {
-    background-color: #28a745;
+    background-color: #0056b3;
     color: white;
     padding: 10px;
     border: none;
@@ -77,11 +85,10 @@
     cursor: pointer;
     text-align: center;
     margin-top: 20px;
-    /* Add spacing above the button */
 }
 
 .feedback-button:hover {
-    background-color: #218838;
+    background-color: darkgreen;
 }
 
 /* Chat container */
@@ -112,22 +119,19 @@
     margin: 5px 0;
     border-radius: 15px;
     max-width: 80%;
-    /* Restricts bubble width to 80% of container */
     word-wrap: break-word;
 }
 
 .chat-bubble.bot {
     background-color: #f0f0f0;
     align-self: flex-start;
-    /* Bot messages align left */
     text-align: left;
 }
 
 .chat-bubble.user {
-    background-color: #007bff;
+    background-color: #0056b3;
     color: white;
     align-self: flex-end;
-    /* User messages align right */
     text-align: right;
     margin-left: auto;
 }
@@ -136,11 +140,8 @@
 .chat-bubble.bot,
 .chat-bubble.user {
     width: auto;
-    /* Adapts to content */
     min-width: 50px;
-    /* Minimum size for very short messages */
     max-width: 70%;
-    /* Caps size for long messages */
 }
 
 /* Input area */
@@ -162,28 +163,30 @@
 }
 
 .send-button {
-    background-color: #007bff;
+    background-color: #0056b3;
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     flex-shrink: 0;
+    transition: background-color 0.3s ease;
 }
 
 .send-button:hover {
-    background-color: #0056b3;
+    background-color: darkgreen;
 }
 
 /* Close button */
 .chat-button-logout {
-    background-color: red;
+    background-color: #0056b3;
     color: white;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     flex-shrink: 0;
+    transition: background-color 0.3s ease;
 }
 
 .chat-button-logout:hover {
@@ -207,17 +210,19 @@
 /* Scrolling only for chatbot */
 body {
     overflow: hidden;
-    /* Disable global scrolling */
 }
 
 .chat-messages {
     overflow-y: auto;
-    /* Enable scrolling for chat messages */
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
     .chat-window {
         flex-direction: column;
+        top: 0;
+        bottom: 0;
+        height: 100%;
     }
 
     .sidebar {
@@ -233,10 +238,10 @@ body {
     }
 
     .input-field {
-        width: 50%;
+        width: 60%;
     }
 
     .send-button {
-        width: 20%;
+        width: 30%;
     }
 }

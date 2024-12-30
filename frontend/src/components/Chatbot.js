@@ -28,7 +28,7 @@ const Chatbot = () => {
         try {
             const embeddings = "embed";
             // Call the backend API
-            const response = await axios.post('http://localhost:5000/api/rag', {
+            const response = await axios.post('http://localhost:5000/api/query', {
                 query: inputMessage,
                 embeddings
             });
