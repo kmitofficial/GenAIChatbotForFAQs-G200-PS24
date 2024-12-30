@@ -12,11 +12,7 @@
     cursor: pointer;
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
     z-index: 1100;
-<<<<<<< HEAD
     /* Ensure it stays on top */
-=======
-    /* Ensure it stays on top */ 
->>>>>>> e0689a6bfe86d462829621ad5fe8720f21ce79aa
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
